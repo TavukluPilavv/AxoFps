@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "axofps",
+  "version": "1.0.0",
+  "name": "AxoFPS",
+  "description": "Client-side FPS options for Minecraft 1.21.1.",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.axofps.AxoFPSClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
