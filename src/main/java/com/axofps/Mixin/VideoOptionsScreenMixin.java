@@ -19,16 +19,14 @@ public class VideoOptionsScreenMixin extends Screen {
 
     @Inject(method = "init", at = @At("RETURN"))
     private void addAxoFPSButton(CallbackInfo ci) {
-        // Görüntü ayarları ekranının üst veya uygun bir kısmına AxoFPS butonu ekler
         int bw = 150;
         int bh = 20;
-        int x = this.width / 2 + 5; // Sağ tarafa veya ortaya konumlandırılabilir
-        int y = this.height / 6 + 132; // Liste sonuna doğru yerleşim
 
+        // Görüntü ayarları ekranına AxoFPS menüsünü açan buton ekler
         this.addDrawableChild(ButtonWidget.builder(Text.literal("§b§lAxoFPS Ayarları"), b -> {
             if (this.client != null) {
                 this.client.setScreen(new AxoFPSScreen());
             }
-        }).dimensions(this.width / 2 - 75, 4, bw, bh).build()); // Ekranın en üst orta kısmına şık bir buton koyar
+        }).dimensions(this.width / 2 - 75, 4, bw, bh).build());
     }
 }
