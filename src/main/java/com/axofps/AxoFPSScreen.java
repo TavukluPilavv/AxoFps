@@ -104,7 +104,6 @@ public final class AxoFPSScreen extends Screen {
     }
 
     private void applyUltraMax() {
-        // Düşük cihazlar ve kalabalık sunucular (entity yoğunluğu) için en sert optimizasyonlar
         client.options.getViewDistance().setValue(5);             
         client.options.getSimulationDistance().setValue(4);      
         client.options.getParticles().setValue(ParticlesMode.MINIMAL); 
@@ -112,9 +111,8 @@ public final class AxoFPSScreen extends Screen {
         client.options.getEntityShadows().setValue(false);       
         client.options.getBiomeBlendRadius().setValue(0);
         
-        // Entity (oyuncu/yaratık) yükünü azaltmak için mesafe ölçeği
         try {
-            client.options.getEntityDistanceScaling().setValue(0.75f);
+            client.options.getEntityDistanceScaling().setValue(0.75d);
         } catch (Exception ignored) {}
         
         client.options.write();
@@ -132,7 +130,6 @@ public final class AxoFPSScreen extends Screen {
     @Override public void close() { client.options.write(); client.setScreen(null); }
     @Override public boolean shouldPause() { return false; }
 
-    // Ekranın ortasında beliren özel hoş geldin ve FPS artış ekranı
     private final class AxoFPSWelcomeScreen extends Screen {
         AxoFPSWelcomeScreen() { super(Text.literal("AxoFPS Ultra Max")); }
 
@@ -144,7 +141,6 @@ public final class AxoFPSScreen extends Screen {
         @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
             renderBackground(context, mouseX, mouseY, delta);
             
-            // Ortada şık bir kutu
             context.fill(width / 2 - 135, height / 2 - 55, width / 2 + 135, height / 2 + 80, 0xC00B0F19);
             
             String playerName = (client.player != null) ? client.player.getName().getString() : "Oyuncu";
