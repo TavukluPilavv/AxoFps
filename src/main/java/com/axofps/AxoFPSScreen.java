@@ -1,6 +1,7 @@
 package com.axofps;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.option.CloudRenderMode;
@@ -9,107 +10,119 @@ import net.minecraft.text.Text;
 
 public final class AxoFPSScreen extends Screen {
     private final MinecraftClient client = MinecraftClient.getInstance();
-    private boolean superMode = false;
-    private boolean entityCullingInfo = false;
-    private String status = "Hazır";
+    private String status = "AxoFPS hazır • Ayarlar anında uygulanır";
 
     public AxoFPSScreen() {
-        super(Text.literal("AxoFPS • FPS Optimizasyonu"));
+        super(Text.literal("AxoFPS"));
     }
 
     @Override
     protected void init() {
-        int x = width / 2 - 105;
-        int y = Math.max(24, height / 6);
+        clearChildren();
+        int bw = Math.min(250, width - 24);
+        int x = width / 2 - bw / 2;
+        int y = Math.max(40, height / 5);
+        int gap = 23;
 
-        addDrawableChild(ButtonWidget.builder(Text.literal("§aSüper Optimizasyon: " + (superMode ? "AÇIK" : "KAPALI")), b -> {
-            superMode = !superMode;
-            if (superMode) {
-                client.options.getParticles().setValue(ParticlesMode.MINIMAL);
-                client.options.getCloudRenderMode().setValue(CloudRenderMode.OFF);
-                status = "Süper optimizasyon açıldı! FPS artışı bekleniyor.";
-                client.setScreen(new AxoFPSConfirmScreen());
-            } else {
-                client.options.getParticles().setValue(ParticlesMode.ALL);
-                client.options.getCloudRenderMode().setValue(CloudRenderMode.FANCY);
-                status = "Süper optimizasyon kapatıldı.";
-                init();
-            }
-        }).dimensions(x, y, 210, 20).build());
+        addDrawableChild(ButtonWidget.builder(Text.literal("§c§lULTRA SÜPER OPTİMİZASYON"), b -> {
+            applyUltra();
+            status = "§aULTRA SÜPER OPTİMİZASYON aktif! Ayarlar uygulandı.";
+            client.options.write();
+            client.setScreen(new AxoFPSConfirmScreen());
+        }).dimensions(x, y, bw, 22).build());
+        y += 29;
 
-        y += 26;
-        addDrawableChild(ButtonWidget.builder(Text.literal("Parçacıklar: " + (client.options.getParticles().getValue() == ParticlesMode.MINIMAL ? "Az" : "Tümü")), b -> {
-            boolean minimal = client.options.getParticles().getValue() != ParticlesMode.MINIMAL;
-            client.options.getParticles().setValue(minimal ? ParticlesMode.MINIMAL : ParticlesMode.ALL);
-            b.setMessage(Text.literal("Parçacıklar: " + (minimal ? "Az" : "Tümü")));
-        }).dimensions(x, y, 210, 20).build());
+        addDrawableChild(ButtonWidget.builder(Text.literal("§eRender Distance: " + client.options.getViewDistance().getValue() + " chunk"), b -> {
+            int next = client.options.getViewDistance().getValue() <= 8 ? 12 : client.options.getViewDistance().getValue() <= 12 ? 16 : 8;
+            client.options.getViewDistance().setValue(next); b.setMessage(Text.literal("Render Distance: " + next + " chunk")); client.options.write();
+        }).dimensions(x, y, bw, 20).build());
+        y += gap;
 
-        y += 26;
-        addDrawableChild(ButtonWidget.builder(Text.literal("Bulutlar: " + (client.options.getCloudRenderMode().getValue() == CloudRenderMode.OFF ? "Kapalı" : "Açık")), b -> {
-            boolean off = client.options.getCloudRenderMode().getValue() != CloudRenderMode.OFF;
-            client.options.getCloudRenderMode().setValue(off ? CloudRenderMode.OFF : CloudRenderMode.FANCY);
-            b.setMessage(Text.literal("Bulutlar: " + (off ? "Kapalı" : "Açık")));
-        }).dimensions(x, y, 210, 20).build());
+        addDrawableChild(ButtonWidget.builder(Text.literal("Simülasyon Mesafesi: " + client.options.getSimulationDistance().getValue()), b -> {
+            int next = client.options.getSimulationDistance().getValue() <= 5 ? 8 : 5;
+            client.options.getSimulationDistance().setValue(next); b.setMessage(Text.literal("Simülasyon Mesafesi: " + next)); client.options.write();
+        }).dimensions(x, y, bw, 20).build());
+        y += gap;
 
-        y += 26;
-        addDrawableChild(ButtonWidget.builder(Text.literal("Entity Culling hakkında"), b -> {
-            entityCullingInfo = !entityCullingInfo;
-            status = entityCullingInfo ? "Entity Culling gerçek görünürlük optimizasyonu için ayrı mod gerektirir." : "Hazır";
-        }).dimensions(x, y, 210, 20).build());
+        addDrawableChild(ButtonWidget.builder(Text.literal("Parçacıklar: " + particleName()), b -> {
+            ParticlesMode next = client.options.getParticles().getValue() == ParticlesMode.MINIMAL ? ParticlesMode.DECREASED : ParticlesMode.MINIMAL;
+            client.options.getParticles().setValue(next); b.setMessage(Text.literal("Parçacıklar: " + particleName())); client.options.write();
+        }).dimensions(x, y, bw, 20).build());
+        y += gap;
 
-        y += 26;
-        addDrawableChild(ButtonWidget.builder(Text.literal("§eModüller / optimizasyon bilgisi"), b -> {
-            status = "AxoFPS ayarları istemci tarafında uygulanır.";
-        }).dimensions(x, y, 210, 20).build());
+        addDrawableChild(ButtonWidget.builder(Text.literal("Bulutlar: " + cloudName()), b -> {
+            CloudRenderMode next = client.options.getCloudRenderMode().getValue() == CloudRenderMode.OFF ? CloudRenderMode.FAST : CloudRenderMode.OFF;
+            client.options.getCloudRenderMode().setValue(next); b.setMessage(Text.literal("Bulutlar: " + cloudName())); client.options.write();
+        }).dimensions(x, y, bw, 20).build());
+        y += gap;
 
-        y += 26;
-        addDrawableChild(ButtonWidget.builder(Text.literal("Kapat"), b -> close())
-                .dimensions(x, y, 210, 20).build());
+        addDrawableChild(ButtonWidget.builder(Text.literal("Varlık Gölgeleri: " + (client.options.getEntityShadows().getValue() ? "Açık" : "Kapalı")), b -> {
+            boolean next = !client.options.getEntityShadows().getValue();
+            client.options.getEntityShadows().setValue(next); b.setMessage(Text.literal("Varlık Gölgeleri: " + (next ? "Açık" : "Kapalı"))); client.options.write();
+        }).dimensions(x, y, bw, 20).build());
+        y += gap;
+
+        addDrawableChild(ButtonWidget.builder(Text.literal("FPS Limiti: " + client.options.getMaxFps().getValue()), b -> {
+            int current = client.options.getMaxFps().getValue();
+            int next = current <= 60 ? 120 : current <= 120 ? 260 : 60;
+            client.options.getMaxFps().setValue(next); b.setMessage(Text.literal("FPS Limiti: " + next)); client.options.write();
+        }).dimensions(x, y, bw, 20).build());
+        y += gap;
+
+        addDrawableChild(ButtonWidget.builder(Text.literal("§bAxoFPS • Kapat"), b -> close()).dimensions(x, y, bw, 20).build());
+    }
+
+    private String particleName() {
+        return switch (client.options.getParticles().getValue()) {
+            case MINIMAL -> "Minimum";
+            case DECREASED -> "Azaltılmış";
+            default -> "Tümü";
+        };
+    }
+
+    private String cloudName() {
+        return client.options.getCloudRenderMode().getValue() == CloudRenderMode.OFF ? "Kapalı" : "Açık";
+    }
+
+    private void applyUltra() {
+        client.options.getViewDistance().setValue(Math.min(8, client.options.getViewDistance().getMax()));
+        client.options.getSimulationDistance().setValue(Math.min(5, client.options.getSimulationDistance().getMax()));
+        client.options.getParticles().setValue(ParticlesMode.MINIMAL);
+        client.options.getCloudRenderMode().setValue(CloudRenderMode.OFF);
+        client.options.getEntityShadows().setValue(false);
+        client.options.getBiomeBlendRadius().setValue(0);
+        client.options.write();
     }
 
     @Override
-    public void render(net.minecraft.client.gui.DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         renderBackground(context, mouseX, mouseY, delta);
+        context.fill(width / 2 - 145, 8, width / 2 + 145, height - 8, 0xB0101725);
+        context.drawCenteredTextWithShadow(textRenderer, Text.literal("§b§lAxoFPS §7| §fPerformans Merkezi"), width / 2, 17, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, Text.literal("§cULTRA SÜPER OPTİMİZASYON"), width / 2, 30, 0xFFFFFF);
         super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredTextWithShadow(textRenderer, Text.literal("AxoFPS • Türkçe Optimizasyon Menüsü"), width / 2, 12, 0x55FFFF);
-        context.drawCenteredTextWithShadow(textRenderer, Text.literal(status), width / 2, height - 28, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, Text.literal(status), width / 2, height - 18, 0xFFFFFF);
     }
 
-    @Override
-    public void close() {
-        client.setScreen(null);
-    }
-
-    @Override
-    public boolean shouldPause() {
-        return false;
-    }
+    @Override public void close() { client.options.write(); client.setScreen(null); }
+    @Override public boolean shouldPause() { return false; }
 
     private final class AxoFPSConfirmScreen extends Screen {
-        AxoFPSConfirmScreen() {
-            super(Text.literal("Süper Optimizasyon"));
+        AxoFPSConfirmScreen() { super(Text.literal("AxoFPS Ultra")); }
+
+        @Override protected void init() {
+            addDrawableChild(ButtonWidget.builder(Text.literal("§aTamam, devam!"), b -> client.setScreen(AxoFPSScreen.this))
+                    .dimensions(width / 2 - 100, height / 2 + 35, 200, 20).build());
         }
 
-        @Override
-        protected void init() {
-            int x = width / 2 - 115;
-            addDrawableChild(ButtonWidget.builder(Text.literal("Tamam"), b -> {
-                client.setScreen(AxoFPSScreen.this);
-                status = "İyi oyunlar TavukluPilavvV2! Süper optimizasyon açıldı, FPS artışı bekleniyor.";
-                AxoFPSScreen.this.init();
-            }).dimensions(x, height / 2 + 20, 230, 20).build());
-        }
-
-        @Override
-        public void render(net.minecraft.client.gui.DrawContext context, int mouseX, int mouseY, float delta) {
+        @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
             renderBackground(context, mouseX, mouseY, delta);
-            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§aSüper optimizasyon açıldı!"), width / 2, height / 2 - 30, 0xFFFFFF);
-            context.drawCenteredTextWithShadow(textRenderer, Text.literal("FPS artışı bekleniyor."), width / 2, height / 2 - 10, 0xFFFFFF);
-            context.drawCenteredTextWithShadow(textRenderer, Text.literal("İyi oyunlar TavukluPilavvV2"), width / 2, height / 2 + 5, 0x55FFFF);
+            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§c§lULTRA SÜPER OPTİMİZASYON"), width / 2, height / 2 - 35, 0xFFFFFF);
+            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§aAyarlar başarıyla uygulandı!"), width / 2, height / 2 - 15, 0xFFFFFF);
+            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§bRender 8 • Simülasyon 5 • Parçacık minimum"), width / 2, height / 2 + 5, 0xFFFFFF);
+            context.drawCenteredTextWithShadow(textRenderer, Text.literal("FPS artışı sisteme ve dünyaya göre değişir."), width / 2, height / 2 + 20, 0xFFFFFF);
             super.render(context, mouseX, mouseY, delta);
         }
-
-        @Override
-        public boolean shouldPause() { return false; }
+        @Override public boolean shouldPause() { return false; }
     }
 }
