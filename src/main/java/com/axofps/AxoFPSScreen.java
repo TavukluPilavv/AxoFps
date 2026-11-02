@@ -85,8 +85,8 @@ public final class AxoFPSScreen extends Screen {
     }
 
     private void applyUltra() {
-        client.options.getViewDistance().setValue(Math.min(8, client.options.getViewDistance().getMax()));
-        client.options.getSimulationDistance().setValue(Math.min(5, client.options.getSimulationDistance().getMax()));
+        client.options.getViewDistance().setValue(8);
+        client.options.getSimulationDistance().setValue(5);
         client.options.getParticles().setValue(ParticlesMode.MINIMAL);
         client.options.getCloudRenderMode().setValue(CloudRenderMode.OFF);
         client.options.getEntityShadows().setValue(false);
