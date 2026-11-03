@@ -1,0 +1,28 @@
+name: Build AxoShader
+
+on:
+  push:
+    paths:
+      - "AxoShader/**"
+      - ".github/workflows/build-axoshader.yml"
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Package Iris shader pack
+        run: |
+          mkdir -p dist/AxoShader
+          cp -r AxoShader/shaders dist/AxoShader/
+          cp AxoShader/pack.mcmeta dist/AxoShader/
+          cd dist
+          zip -r AxoShader.zip AxoShader
+      - name: Upload shader ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: AxoShader
+          path: dist/AxoShader.zip
+          if-no-files-found: error
