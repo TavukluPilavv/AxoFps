@@ -12,7 +12,6 @@ public final class AxoFPSScreen extends Screen {
     private final MinecraftClient client = MinecraftClient.getInstance();
     private String status = "AxoFPS hazır • Ayarlar anında uygulanır";
     
-    // Kullanıcı kapatana kadar açık kalacak Ultra Max Durumu
     private static boolean ultraMaxActive = false;
     private static boolean entityCullingActive = true;
 
@@ -45,7 +44,7 @@ public final class AxoFPSScreen extends Screen {
         }).dimensions(x, y, bw, 18).build());
         y += 22;
 
-        // 2. ENTITY & MORE CULLING (Görünmeyen Mob/Oyuncuları ve Yükü Temizler)
+        // 2. ENTITY & MORE CULLING
         String cullingText = entityCullingActive ? "§aEntity & More Culling: AÇIK" : "§cEntity & More Culling: KAPALI";
         addDrawableChild(ButtonWidget.builder(Text.literal(cullingText), b -> {
             entityCullingActive = !entityCullingActive;
@@ -76,7 +75,7 @@ public final class AxoFPSScreen extends Screen {
         }).dimensions(x, y, bw, 18).build());
         y += gap;
 
-        // 6. FPS Limiti (Sınırsız / 160-170+ Kilidini Açar)
+        // 6. FPS Limiti (Sınırsız)
         addDrawableChild(ButtonWidget.builder(Text.literal("FPS Limiti: " + (client.options.getMaxFps().getValue() >= 260 ? "Sınırsız" : client.options.getMaxFps().getValue())), b -> {
             int current = client.options.getMaxFps().getValue();
             int next = current <= 60 ? 120 : current <= 120 ? 260 : 300;
@@ -106,7 +105,7 @@ public final class AxoFPSScreen extends Screen {
         client.options.getCloudRenderMode().setValue(CloudRenderMode.OFF); 
         client.options.getEntityShadows().setValue(false);       
         client.options.getBiomeBlendRadius().setValue(0);
-        client.options.getMaxFps().setValue(300); // FPS kilidini tamamen açar (Sınırsız yapar)
+        client.options.getMaxFps().setValue(300); // Sınırsız
         
         try {
             client.options.getEntityDistanceScaling().setValue(0.75d);
@@ -117,7 +116,6 @@ public final class AxoFPSScreen extends Screen {
 
     private void applyCullingOptimization() {
         if (entityCullingActive) {
-            // Arkadaki ve görüş açısı dışındaki entity'lerin yükünü keser (Entity Culling etkisi)
             try {
                 client.options.getEntityDistanceScaling().setValue(0.65d);
             } catch (Exception ignored) {}
@@ -131,8 +129,8 @@ public final class AxoFPSScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // Arkadaki oyun dünyasını bulanıklaştıran komut kaldırıldı, artık net görünür!
-        context.fill(width / 2 - 145, 4, width / 2 + 145, height - 4, 0xD00A0E1A);
+        // Arka plan tamamen net tutuluyor
+        context.fill(width / 2 - 145, 4, width / 2 + 145, height - 4, 0xFF0A0E1A);
         context.drawCenteredTextWithShadow(textRenderer, Text.literal("§b§lAxoFPS §7| §fPerformans Merkezi"), width / 2, 10, 0xFFFFFF);
         super.render(context, mouseX, mouseY, delta);
         context.drawCenteredTextWithShadow(textRenderer, Text.literal(status), width / 2, height - 12, 0xFFFFFF);
@@ -141,7 +139,7 @@ public final class AxoFPSScreen extends Screen {
     @Override public void close() { client.options.write(); client.setScreen(null); }
     @Override public boolean shouldPause() { return false; }
 
-    // Bulanıklığı Kaldırılmış ve Net Karşılama Ekranı
+    // Bulanıklığı Olmayan, Keskin ve Net Karşılama Ekranı
     private final class AxoFPSWelcomeScreen extends Screen {
         AxoFPSWelcomeScreen() { super(Text.literal("AxoFPS Ultra Max")); }
 
@@ -151,8 +149,8 @@ public final class AxoFPSScreen extends Screen {
         }
 
         @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-            // Arka planın bulanıklaşması engellendi, tamamen net ve koyu şık bir kutu eklendi
-            context.fill(width / 2 - 145, height / 2 - 60, width / 2 + 145, height / 2 + 80, 0xF0050811);
+            // 0xFF ile başlayan tam mat renk kullanıldı -> Bulanıklık ve saydamlık sıfır!
+            context.fill(width / 2 - 145, height / 2 - 60, width / 2 + 145, height / 2 + 80, 0xFF050811);
             
             String playerName = (client.player != null) ? client.player.getName().getString() : "Oyuncu";
             
