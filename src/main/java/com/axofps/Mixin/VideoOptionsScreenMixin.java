@@ -22,7 +22,6 @@ public class VideoOptionsScreenMixin extends Screen {
         int bw = 120;
         int bh = 18;
 
-        // Video ayarları ekranına AxoFPS menüsünü açan buton ekler
         this.addDrawableChild(ButtonWidget.builder(
             Text.literal("§b§lAxoFPS Ayarları"), 
             b -> {
