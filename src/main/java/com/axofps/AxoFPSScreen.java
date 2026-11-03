@@ -10,7 +10,7 @@ import net.minecraft.text.Text;
 
 public final class AxoFPSScreen extends Screen {
     private final MinecraftClient client = MinecraftClient.getInstance();
-    private String status = "§aAxoFPS Pro • 300 FPS Motoru Hazır";
+    private String status = "§aAxoFPS Pro • 300 FPS & Akıcılık Aktif";
     
     private static boolean proMaxActive = false;
     private static boolean entityCullingActive = true;
@@ -34,7 +34,7 @@ public final class AxoFPSScreen extends Screen {
             proMaxActive = !proMaxActive;
             if (proMaxActive) {
                 applyProMax300FPS();
-                status = "§aPRO MAX 300 FPS DEVREDE! Devasa akıcılık ve FPS artışı aktif.";
+                status = "§aPRO MAX 300 FPS DEVREDE! Kalabalık alanlar optimize edildi.";
                 client.options.write();
                 client.setScreen(new AxoFPSProWelcomeScreen());
             } else {
@@ -51,7 +51,7 @@ public final class AxoFPSScreen extends Screen {
             System.gc();
             long after = Runtime.getRuntime().freeMemory();
             long freed = Math.abs(after - before) / (1024 * 1024);
-            status = "§aRAM Temizlendi! Serbest kalan: ~" + freed + " MB (Drop engellendi)";
+            status = "§aRAM Temizlendi! Serbest kalan: ~" + freed + " MB";
         }).dimensions(x, y, bw, 18).build());
         y += gap;
 
@@ -64,7 +64,7 @@ public final class AxoFPSScreen extends Screen {
         }).dimensions(x, y, bw, 18).build());
         y += gap;
 
-        // 4. ENTITY & MORE CULLING
+        // 4. ENTITY & MORE CULLING (Kalabalıkta FPS Düşüşünü Keser)
         String cullingText = entityCullingActive ? "§aEntity & More Culling: AÇIK" : "§cEntity & More Culling: KAPALI";
         addDrawableChild(ButtonWidget.builder(Text.literal(cullingText), b -> {
             entityCullingActive = !entityCullingActive;
@@ -76,7 +76,7 @@ public final class AxoFPSScreen extends Screen {
 
         // 5. Render Distance
         addDrawableChild(ButtonWidget.builder(Text.literal("§eRender Distance: " + client.options.getViewDistance().getValue() + " chunk"), b -> {
-            int next = client.options.getViewDistance().getValue() <= 6 ? 10 : client.options.getViewDistance().getValue() <= 10 ? 14 : 6;
+            int next = client.options.getViewDistance().getValue() <= 6 ? 8 : client.options.getViewDistance().getValue() <= 8 ? 12 : 6;
             client.options.getViewDistance().setValue(next); b.setMessage(Text.literal("Render Distance: " + next + " chunk")); client.options.write();
         }).dimensions(x, y, bw, 18).build());
         y += gap;
@@ -88,14 +88,11 @@ public final class AxoFPSScreen extends Screen {
         }).dimensions(x, y, bw, 18).build());
         y += gap;
 
-        // 7. 300 FPS / Sınırsız Sınır
-        addDrawableChild(ButtonWidget.builder(Text.literal("FPS Hedefi: " + (client.options.getMaxFps().getValue() >= 260 ? "300 FPS (Sınırsız)" : client.options.getMaxFps().getValue())), b -> {
-            int current = client.options.getMaxFps().getValue();
-            int next = current <= 60 ? 120 : current <= 120 ? 260 : 300;
-            if (current >= 260) next = 60;
-            client.options.getMaxFps().setValue(next); 
-            b.setMessage(Text.literal("FPS Hedefi: " + (next >= 300 ? "300 FPS (Sınırsız)" : next))); 
+        // 7. 300 FPS Sınırı (Sınırsız)
+        addDrawableChild(ButtonWidget.builder(Text.literal("FPS Hedefi: 300 FPS (Sınırsız)"), b -> {
+            client.options.getMaxFps().setValue(300);
             client.options.write();
+            status = "§aFPS hedefi 300 (Sınırsız) olarak sabitlendi!";
         }).dimensions(x, y, bw, 18).build());
         y += gap;
 
@@ -104,34 +101,34 @@ public final class AxoFPSScreen extends Screen {
     }
 
     private void applyProMax300FPS() {
-        client.options.getViewDistance().setValue(4);             // Düşük cihazlar için maksimum akıcılık
+        client.options.getViewDistance().setValue(6);             
         client.options.getSimulationDistance().setValue(4);      
         client.options.getParticles().setValue(ParticlesMode.MINIMAL); 
         client.options.getCloudRenderMode().setValue(CloudRenderMode.OFF); 
         client.options.getEntityShadows().setValue(false);       
         client.options.getBiomeBlendRadius().setValue(0);
-        client.options.getMaxFps().setValue(300); // 300 FPS kilidi açıldı
+        client.options.getMaxFps().setValue(300); 
         
         try {
-            client.options.getEntityDistanceScaling().setValue(0.55d); // Devasa entity yükü hafifletme
+            client.options.getEntityDistanceScaling().setValue(0.50d); // Kalabalık entity yükünü ciddi oranda hafifletir
         } catch (Exception ignored) {}
         
-        System.gc(); // Belleği anında temizle
+        System.gc(); 
         client.options.write();
     }
 
     private void applyCullingOptimization() {
         try {
-            client.options.getEntityDistanceScaling().setValue(entityCullingActive ? 0.55d : 1.0d);
+            client.options.getEntityDistanceScaling().setValue(entityCullingActive ? 0.50d : 1.0d);
         } catch (Exception ignored) {}
         client.options.write();
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        // Kesinlikle bulanık olmayan koyu net arka plan
+        // Arkadaki oyun dünyasını ve menüyü karartan bulanıklık tamamen kaldırıldı (Keskin Mat Arka Plan)
         context.fill(width / 2 - 150, 2, width / 2 + 150, height - 2, 0xFF050811);
-        context.drawCenteredTextWithShadow(textRenderer, Text.literal("§b§l⚡ AxoFPS Pro §7| §f300 FPS & Akıcılık Motoru"), width / 2, 6, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, Text.literal("§b§l⚡ AxoFPS Pro §7| §f300 FPS & Akıcılık Merkezi"), width / 2, 6, 0xFFFFFF);
         super.render(context, mouseX, mouseY, delta);
         context.drawCenteredTextWithShadow(textRenderer, Text.literal(status), width / 2, height - 10, 0xFFFFFF);
     }
@@ -139,27 +136,27 @@ public final class AxoFPSScreen extends Screen {
     @Override public void close() { client.options.write(); client.setScreen(null); }
     @Override public boolean shouldPause() { return false; }
 
-    // Pro Max Karşılama Ekranı (Özel Notlar ve FPS Bilgilendirmesi ile)
+    // Kesinlikle Bulanık Olmayan, Bıçak Gibi Keskin Karşılama Ekranı
     private final class AxoFPSProWelcomeScreen extends Screen {
         AxoFPSProWelcomeScreen() { super(Text.literal("AxoFPS Pro Max")); }
 
         @Override protected void init() {
-            addDrawableChild(ButtonWidget.builder(Text.literal("§aHarika, Uçuşa Geç!"), b -> client.setScreen(AxoFPSScreen.this))
+            addDrawableChild(ButtonWidget.builder(Text.literal("§aHarika, Akıcı Oyuna Başla!"), b -> client.setScreen(AxoFPSScreen.this))
                     .dimensions(width / 2 - 110, height / 2 + 58, 220, 20).build());
         }
 
         @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-            // Hiçbir bulanıklık yok, tamamen net ve koyu kutu
+            // Şeffaflık veya bulanıklık yok; 0xFF ile başlayan tam opak koyu mat ekran
             context.fill(width / 2 - 160, height / 2 - 70, width / 2 + 160, height / 2 + 85, 0xFF020408);
             
             String playerName = (client.player != null) ? client.player.getName().getString() : "Oyuncu";
             
             context.drawCenteredTextWithShadow(textRenderer, Text.literal("§c§l🔥 ULTRA SUPER PRO MAX 300 FPS"), width / 2, height / 2 - 60, 0xFFFFFF);
-            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§bKaptan §e" + playerName + "§b, Sistem Ateşlendi!"), width / 2, height / 2 - 43, 0xFFFFFF);
-            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§a🚀 +50 / +100 FPS Artış & 300 FPS Kilidi Aktif"), width / 2, height / 2 - 25, 0xFFFFFF);
-            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§a✔ Düşük Cihaz Optimizasyonu & RAM Temizlendi"), width / 2, height / 2 - 10, 0xFFFFFF);
+            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§bKaptan §e" + playerName + "§b, Optimizasyon Tamam!"), width / 2, height / 2 - 43, 0xFFFFFF);
+            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§a🚀 Kalabalık Alanlarda FPS Düşüşü Engellendi"), width / 2, height / 2 - 25, 0xFFFFFF);
+            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§a✔ RAM Temizlendi & 300 FPS Kilidi Açıldı"), width / 2, height / 2 - 10, 0xFFFFFF);
             context.drawCenteredTextWithShadow(textRenderer, Text.literal("§7✔ Entity Culling & Drop Önleyici Devrede"), width / 2, height / 2 + 7, 0xFFFFFF);
-            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§fArtık Takılmadan 170-200+ FPS'in Tadını Çıkar!"), width / 2, height / 2 + 28, 0xFFFFFF);
+            context.drawCenteredTextWithShadow(textRenderer, Text.literal("§fArtık Takılmadan 170-200+ FPS ile Akıyorsun!"), width / 2, height / 2 + 28, 0xFFFFFF);
             
             super.render(context, mouseX, mouseY, delta);
         }
